@@ -10,7 +10,6 @@ require('bootstrap');
 var Loading = require('./js/views/loading');
 var Search = require('./js/views/search');
 var Index = require('./js/views/index');
-var GeneView = require('./js/views/gene');
 var BrowserView = require('./js/views/browser');
 
 App = {};
@@ -20,12 +19,10 @@ App.views = {};
 App.views.loading = new Loading({el:'body'});
 App.views.search = new Search({el:'#search'});
 App.views.index = new Index({el:'#content'});
-App.views.gene = new GeneView({el:'#content'});
 App.views.browser = new BrowserView({el:'#content'});
 
 // Models
 App.models = {};
-App.models.Gene = require('./js/models/gene');
 App.models.Browser = require('./js/models/browser');
 App.models.Config = require('./js/models/config');
 
@@ -56,7 +53,7 @@ App.init = function(config){
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./js/models/browser":2,"./js/models/config":3,"./js/models/gene":4,"./js/router":5,"./js/views/browser":7,"./js/views/gene":8,"./js/views/index":9,"./js/views/loading":10,"./js/views/search":11,"backbone":15,"bootstrap":17,"jquery":77}],2:[function(require,module,exports){
+},{"./js/models/browser":2,"./js/models/config":3,"./js/router":5,"./js/views/browser":7,"./js/views/index":9,"./js/views/loading":10,"./js/views/search":11,"backbone":15,"bootstrap":17,"jquery":77}],2:[function(require,module,exports){
 module.exports = Backbone.Model.extend({
     urlRoot: '/browser'
 });
@@ -64,25 +61,16 @@ module.exports = Backbone.Model.extend({
 module.exports = Backbone.Model.extend({
     defaults: {
         browser_example: '',
-        gene_example: '',
         icon: '/static/img/circose.png'
     },
     urlRoot: '/static/json/config.json'
 });
 
-},{}],4:[function(require,module,exports){
-module.exports = Backbone.Model.extend({
-    urlRoot: '/gene'
-});
 },{}],5:[function(require,module,exports){
 var _ = require('underscore');
 
 var AppRouter = Backbone.Router.extend({
     routes: {
-
-        "gene": 'getGene',
-        "gene/:id": 'getGeneId',
-
         "browser" : 'getBrowser',
         "browser/:id" : 'getBrowserId',
 
@@ -98,13 +86,6 @@ function setIndex(){
 
 var _current = {};
 
-function _renderGene(gene){
-
-    App.views.search.showGeneView(gene.id);
-    App.views.gene.render(gene);
-    App.views.gene.setVisible();
-}
-
 function _renderBrowser(browser){
 
     App.views.search.showBrowserView(browser);
@@ -114,44 +95,6 @@ function _renderBrowser(browser){
 
 // Instantiate the router
 var app_router = new AppRouter();
-
-app_router.on('route:getGene', function(){
-
-    if(!_.isUndefined(_current.gene)){
-        App.router.navigate('/gene/' + _current.gene.id, {trigger: false});
-        _renderGene(_current.gene);
-        return;
-    }
-
-    App.views.search.showGeneView();
-    setIndex();
-});
-
-app_router.on('route:getGeneId', function (id) {
-
-    if(!_.isUndefined(_current.gene) && _current.gene.id === id){
-        _renderGene(_current.gene);
-        return;
-    }
-
-    var gene = new App.models.Gene({id:id});
-
-    gene.fetch({
-        success: function(gene){
-
-            gene = gene.toJSON();
-            _current.gene = gene;
-            _renderGene(gene);
-
-        },
-        error: function(gene, res){
-
-            var text = 'Your search - <em>' + id + ' - </em> did not match any gene.  Check the browser for examples of valid gene names as they may be an id.';
-            App.views.search.renderError(text);
-            setIndex();
-        }
-    });
-});
 
 app_router.on('route:getBrowser', function(){
 
@@ -238,42 +181,6 @@ this["Templates"]["browser"] = Handlebars.template({"1":function(container,depth
     + "    </div>\n</div>\n";
 },"useData":true});
 
-this["Templates"]["gene"] = Handlebars.template({"1":function(container,depth0,helpers,partials,data) {
-    var helper, alias1=depth0 != null ? depth0 : {}, alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
-
-  return "        <h1 class=\"page-header\">\n            "
-    + alias4(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"name","hash":{},"data":data}) : helper)))
-    + "\n            <small>\n                 chromosome "
-    + alias4(((helper = (helper = helpers.chromosome || (depth0 != null ? depth0.chromosome : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"chromosome","hash":{},"data":data}) : helper)))
-    + " (start: "
-    + alias4(((helper = (helper = helpers.start || (depth0 != null ? depth0.start : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"start","hash":{},"data":data}) : helper)))
-    + ", end: "
-    + alias4(((helper = (helper = helpers.end || (depth0 != null ? depth0.end : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"end","hash":{},"data":data}) : helper)))
-    + ")\n            </small>\n        </h1>\n        <div style=\"width: 900px;\" id=\""
-    + alias4(((helper = (helper = helpers.feature_viewer || (depth0 != null ? depth0.feature_viewer : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"feature_viewer","hash":{},"data":data}) : helper)))
-    + "\"></div>\n\n        <ul class=\"nav nav-pills\">\n          <li class=\"active\">\n            <a href=\"/#/browser/"
-    + alias4(((helper = (helper = helpers.chromosome || (depth0 != null ? depth0.chromosome : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"chromosome","hash":{},"data":data}) : helper)))
-    + ":"
-    + alias4(((helper = (helper = helpers.start || (depth0 != null ? depth0.start : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"start","hash":{},"data":data}) : helper)))
-    + "-"
-    + alias4(((helper = (helper = helpers.end || (depth0 != null ? depth0.end : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"end","hash":{},"data":data}) : helper)))
-    + "\">Explore region in browser</a>\n          </li>\n        </ul>\n";
-},"3":function(container,depth0,helpers,partials,data) {
-    var helper;
-
-  return "        <div style=\"height:55%\">\n            <div class=\"alert alert-danger\" role=\"alert\">\n                <span class=\"glyphicon glyphicon-exclamation-sign\" aria-hidden=\"true\"></span>\n                <span class=\"sr-only\">Error:</span>\n                "
-    + container.escapeExpression(((helper = (helper = helpers.error || (depth0 != null ? depth0.error : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"error","hash":{},"data":data}) : helper)))
-    + "\n            </div>\n        </div>\n";
-},"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
-    var stack1, alias1=depth0 != null ? depth0 : {};
-
-  return "<div class=\"col-lg-12\">\n\n"
-    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.name : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "\n"
-    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.error : depth0),{"name":"if","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "    <hr>\n</div>\n";
-},"useData":true});
-
 this["Templates"]["index"] = Handlebars.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     return "<hr>\n<div class=\"row\">\n    <div class=\"col-md-6\">\n        <p>HiCBrowser is a simple web browser to visualize <strong>Hi-C</strong> and other genomic tracks. \n        <p>It is based on <strong>pyGenomeTracks</strong>, a program and library to plot beautiful genome browser tracks.</p>\n    </div>\n    <div class=\"col-md-6\">\n        <!-- build:src /static/img/vis.png -->\n        <img class=\"img-responsive\" src=\"../static/img/vis.png\" alt=\"\">\n        <!-- /build -->\n    </div>\n</div>\n<br>\n<br>\n";
 },"useData":true});
@@ -286,13 +193,7 @@ this["Templates"]["loading"] = Handlebars.template({"compiler":[7,">= 4.0.0"],"m
     + "\" class=\"modal fade bs-example-modal-sm\" style=\"color: #fff\" tabindex=\"-1\" role=\"dialog\">\n    <div class=\"modal-dialog modal-sm\">\n        <div class=\"modal-content\">\n            <div class=\"search-box\" style=\"width:100%\">\n                <!-- build:src /static/img/loading.gif -->\n                    <img src=\"../static/img/loading.gif\">\n                <!-- /build -->\n                <h1>Loading ...</h1>\n            </div>\n        </div>\n    </div>\n</div>";
 },"useData":true});
 
-this["Templates"]["search"] = Handlebars.template({"1":function(container,depth0,helpers,partials,data) {
-    var helper;
-
-  return "        <small><a data-id=\""
-    + container.escapeExpression(((helper = (helper = helpers.gene_example_id || (depth0 != null ? depth0.gene_example_id : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : {},{"name":"gene_example_id","hash":{},"data":data}) : helper)))
-    + "\" href=\"#\"> <span class=\"glyphicon glyphicon-star\" aria-hidden=\"true\"></span> example</a></small>\n";
-},"3":function(container,depth0,helpers,partials,data) {
+this["Templates"]["search"] = Handlebars.template({"3":function(container,depth0,helpers,partials,data) {
     var helper;
 
   return "        <small><a data-id=\""
@@ -302,18 +203,10 @@ this["Templates"]["search"] = Handlebars.template({"1":function(container,depth0
     var stack1, helper, alias1=depth0 != null ? depth0 : {}, alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
 
   return "<ul class=\"nav nav-pills\">\n    <li id=\""
-    + alias4(((helper = (helper = helpers.gene_btn || (depth0 != null ? depth0.gene_btn : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"gene_btn","hash":{},"data":data}) : helper)))
-    + "\" data-id=\""
-    + alias4(((helper = (helper = helpers.gene_btn || (depth0 != null ? depth0.gene_btn : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"gene_btn","hash":{},"data":data}) : helper)))
-    + "\" role=\"presentation\" class=\"active\"><a href=\"#\">Search Gene</a></li>\n    <li id=\""
     + alias4(((helper = (helper = helpers.browser_btn || (depth0 != null ? depth0.browser_btn : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"browser_btn","hash":{},"data":data}) : helper)))
     + "\" data-id=\""
     + alias4(((helper = (helper = helpers.browser_btn || (depth0 != null ? depth0.browser_btn : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"browser_btn","hash":{},"data":data}) : helper)))
     + "\" role=\"presentation\"><a href=\"#\">Browse Region</a></li>\n</ul>\n\n<br>\n\n<div class=\"jumbotron\">\n\n    <div>\n        <div class=\"input-group input-group-lg\">\n            <input id=\""
-    + alias4(((helper = (helper = helpers.gene_search_input || (depth0 != null ? depth0.gene_search_input : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"gene_search_input","hash":{},"data":data}) : helper)))
-    + "\" type=\"text\" class=\"  search-query form-control\" placeholder=\"Type a gene name here ...\" />\n            <span class=\"input-group-btn\">\n                <button id=\"search\" class=\"btn btn-primary\" type=\"button\" data-toggle=\"tooltip\" placement=\"bottom\" title=\"Search!\">\n                    <span class=\"glyphicon glyphicon-search\"></span>\n                </button>\n            </span>\n        </div>\n\n"
-    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.gene_example : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "    </div>\n\n    <div style=\"display:none\">\n        <div class=\"input-group input-group-lg\">\n            <input id=\""
     + alias4(((helper = (helper = helpers.browser_search_input || (depth0 != null ? depth0.browser_search_input : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"browser_search_input","hash":{},"data":data}) : helper)))
     + "\" type=\"text\" class=\"  search-query form-control\" placeholder=\"Type the region that you want to see ...\" />\n            <span class=\"input-group-btn\">\n                <button id=\"search\" class=\"btn btn-primary\" type=\"button\" data-toggle=\"tooltip\" placement=\"bottom\" title=\"Search!\">\n                    <span class=\"glyphicon glyphicon-search\"></span>\n                </button>\n            </span>\n        </div>\n\n"
     + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.browser_example : depth0),{"name":"if","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
@@ -430,7 +323,7 @@ var d3 = require('d3');
 var FeatureViewer = require('feature-viewer');
 var templates = require('../templates');
 
-var _gene = {}, _feature_viewer_id = _.uniqueId('feat_viewer_'), $div;
+var _feature_viewer_id = _.uniqueId('feat_viewer_'), $div;
 
 
 function componentToHex(c) {
@@ -442,125 +335,39 @@ function rgbToHex(r, g, b) {
     return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
-function parseData(data){
+// module.exports = Backbone.View.extend({
 
-    var parsed = {};
+//     initialize: function(options){
+//         this.options = options;
+//     },
 
-    parsed.tracks = _.compact(_.map(data.tracks, function(track, i){
+//     setVisible: function(){
+//         $div.show().siblings().hide();
+//         $(this.el).css({opacity: 0.0, visibility: 'visible'}).animate({opacity: 1.0}, 800);
+//     },
 
-        var feats;
+//     renderViewer: function(tracks){
 
-        if(track.file_type === 'boundaries'){
-
-            parsed.extent = d3.extent(track.x_values);
-
-            feats =  _.map(track.x_values, function(d, j){
-                return { x: d, y: track.y_values[j]};
-            });
-
-
-            return {
-                type: 'line',
-                name: track.section_name,
-                className: 'tads',
-                color: '#008B8D',
-                height: '5',
-                data: feats,
-                interpolation: 'linear'
-            };
-
-        }else if(track.file_type === 'bed'){
-
-            feats = _.map(track.intervals, function(d, j){
-
-                var feat = {
-                    x: d.bed[1],
-                    y: d.bed[2]
-                };
-
-                if(track.title === 'genes')
-                    feat.description = d.bed[3];
-
-                if(_.isArray(d.bed[8])) feat.color = rgbToHex.apply(null, d.bed[8]);
-
-                return feat;
-            });
-
-            return {
-                type: 'rect',
-                name: track.title,
-                data: feats,
-                color: 'steelblue'
-            };
-        }
-
-    }));
-
-    return parsed;
-
-}
-
-module.exports = Backbone.View.extend({
-
-    initialize: function(options){
-        this.options = options;
-    },
-
-    render: function(render){
-
-        render = _.isUndefined(render) ? {} : render;
-        render.feature_viewer = _feature_viewer_id;
-
-        if(render.id === _gene.id){
-            return;
-        }
-
-        $(this.el).css({opacity: 0.0, visibility: 'hidden'});
-
-        var tpl = templates.gene(render);
-
-        if( ! _.isUndefined($div) ) $div.remove();
+//         data = parseData(tracks);
 
 
-        $div = $('<div></div>')
-            .hide()
-            .append(tpl);
-
-        $(this.el).append($div);
-
-        this.renderViewer(render.tracks);
-
-        // Select all elements with data-toggle="tooltips" in the document
-        $('[data-toggle="tooltip"]').tooltip();
-    },
-
-    setVisible: function(){
-        $div.show().siblings().hide();
-        $(this.el).css({opacity: 0.0, visibility: 'visible'}).animate({opacity: 1.0}, 800);
-    },
-
-    renderViewer: function(tracks){
-
-        data = parseData(tracks);
+//         var ft = new FeatureViewer(
+//             data.extent[1],
+//             "#"+_feature_viewer_id,
+//             {
+//                 showAxis: false,
+//                 showSequence: false,
+//                 brushActive: true,
+//                 toolbar:false,
+//                 bubbleHelp:false,
+//                 zoomMax:10,
+//                 offset: {start: data.extent[0], end: data.extent[1]}
+//             });
 
 
-        var ft = new FeatureViewer(
-            data.extent[1],
-            "#"+_feature_viewer_id,
-            {
-                showAxis: false,
-                showSequence: false,
-                brushActive: true,
-                toolbar:false,
-                bubbleHelp:false,
-                zoomMax:10,
-                offset: {start: data.extent[0], end: data.extent[1]}
-            });
-
-
-        _.each(data.tracks, ft.addFeature);
-    }
-});
+//         _.each(data.tracks, ft.addFeature);
+//     }
+// });
 
 },{"../templates":6,"d3":31,"feature-viewer":32,"underscore":82}],9:[function(require,module,exports){
 var _ = require('underscore');
@@ -642,14 +449,11 @@ var prev_id = _.uniqueId('prev_id_'),
     next_id = _.uniqueId('next_id_') ,
     zoomout_id = _.uniqueId('zoomout_id_'),
     browser_search_input = _.uniqueId('search_input_'),
-    gene_search_input = _.uniqueId('search_input_'),
     search_btn = _.uniqueId('search_btn_'),
-    gene_btn = _.uniqueId('gene_btn_'),
     browser_btn = _.uniqueId('browser_btn_'),
-    gene_example_id = _.uniqueId('gene_example_'),
     browser_example_id = _.uniqueId('browser_example_');
 
-var _show_gene = true, _links;
+var _links;
 
 function _redirect(url){
     App.router.navigate(url, {trigger: true});
@@ -675,12 +479,9 @@ module.exports = Backbone.View.extend({
         data.prev_id = prev_id;
         data.next_id = next_id;
         data.zoomout_id = zoomout_id;
-        data.gene_search_input = gene_search_input;
         data.browser_search_input = browser_search_input;
-        data.gene_btn = gene_btn;
         data.browser_btn = browser_btn;
         data.browser_example_id = browser_example_id;
-        data.gene_example_id = gene_example_id;
 
 
         var tpl = templates.search(data);
@@ -695,21 +496,17 @@ module.exports = Backbone.View.extend({
 
     update : function(obj){
 
-        if(_.isUndefined(obj.name)){
-            onGeneButton();
-        }else{
-            onBrowserButton();
-            updateButtons(obj);
-        }
+        onBrowserButton();
+        updateButtons(obj);
     },
 
     search: function(){
-        var val = (_show_gene) ? $( '#' + gene_search_input).val() : $( '#' + browser_search_input).val();
+        var val = $( '#' + browser_search_input).val();
 
         $('#error').hide();
 
         if(val.length > 0){
-            var url = (_show_gene) ? '/gene/' + val : '/browser/' + val;
+            var url = '/browser/' + val;
             App.router.navigate(url, {trigger: true});
         }
     },
@@ -719,14 +516,7 @@ module.exports = Backbone.View.extend({
 
         var id = $(e.currentTarget).data('id');
 
-        if(id === gene_btn){
-            _show_gene = true;
-            this.showGeneView();
-
-            App.router.navigate('/gene', {trigger: true, replace:true});
-
-        }else if(id === browser_btn) {
-            _show_gene = false;
+        if(id === browser_btn) {
             this.showBrowserView();
 
             App.router.navigate('/browser', {trigger: true, replace:true});
@@ -739,9 +529,7 @@ module.exports = Backbone.View.extend({
 
         var id = $(e.currentTarget).data('id');
 
-        if(id === gene_example_id){
-            App.router.navigate('/gene/' + App.config.attributes.gene_example, {trigger: true});
-        }else if(id === browser_example_id){
+        if(id === browser_example_id){
             App.router.navigate('/browser/' + App.config.attributes.browser_example, {trigger: true});
         }else if(!_.isUndefined(_links)){
             if(id === prev_id){
@@ -758,26 +546,13 @@ module.exports = Backbone.View.extend({
         if(e.which === 13) this.search();
     },
 
-    showGeneView : function(id){
-
-        if(!_.isUndefined(id)) $( '#' + gene_search_input ).val(id);
-
-        $( '#' + browser_btn).removeClass('active');
-        $( '#' + gene_btn).addClass('active');
-
-        $( '#' + browser_search_input ).parent().parent().css({opacity: 0.0, display: 'none'});
-        $( '#' + gene_search_input ).parent().parent().css({opacity: 0.0, display: 'block'}).animate({opacity: 1.0}, 800);
-    },
-
     showBrowserView : function(links){
         _links = links;
 
         if(!_.isUndefined(links)) $( '#' + browser_search_input ).val(links.id);
 
-        $( '#' + gene_btn).removeClass('active');
         $( '#' + browser_btn).addClass('active');
 
-        $( '#' + gene_search_input ).parent().parent().css({opacity: 0.0, display: 'none'});
         $( '#' + browser_search_input ).parent().parent().css({opacity: 0.0, display: 'block'}).animate({opacity: 1.0}, 800);
     }
 });

@@ -11,13 +11,12 @@ import pygenometracks.plotTracks
 from pygenometracks.tracks.GenomeTrack import GenomeTrack
 import pygenometracks.tracksClass as pgttc
 from pygenometracks.utilities import file_to_intervaltree, opener, to_string
-import hicbrowser.tracks2json
 
 
 from configparser import ConfigParser
 
-pgttc.DEFAULT_WIDTH_RATIOS = (0.01, 0.89, 0.11)
-pgttc.DEFAULT_MARGINS = {'left': 0.02, 'right': 0.98, 'bottom': 0, 'top': 1}
+pgttc.DEFAULT_WIDTH_RATIOS = (0.01, 0.80, 0.20)
+pgttc.DEFAULT_MARGINS = {'left': 0.04, 'right': 0.98, 'bottom': 0, 'top': 1}
 
 def default(o):
     """
@@ -28,24 +27,6 @@ def default(o):
         return int(o)
     else:
         return o
-
-def get_TAD_for_gene(gene_name):
-    """
-    Returs the TAD position of a given gene name
-
-    :param gene_name:
-    :return:
-    """
-    gene_name = gene_name.strip().lower()
-    if gene_name in gene2pos:
-        # get gene position
-        chrom_, start_, end_ = gene2pos[gene_name]
-        if chrom_ not in tads_intval_tree:
-            chrom_ = GenomeTrack.change_chrom_names(chrom_)
-        tad_pos = sorted(tads_intval_tree[chrom_][start_:end_])[0]
-        return chrom_, tad_pos.begin, tad_pos.end
-    else:
-        return None
 
 
 def snap_to_resolution(start, end):
@@ -144,22 +125,11 @@ def main(config_file, port, numProc, template_folder=None,  debug=False):
     tad_img_root = img_path + '/genes'
     img_root = img_path + '/browser'
 
-    # initialize TAD interval tree
-    # using the 'TAD intervals' file in the config file
-
-    tads_file = config.get('general', 'TAD intervals')
-    global tads_intval_tree
-    tads_intval_tree, __, __ = file_to_intervaltree(tads_file)
-
     # initialize gene name to position mapping
     genes = config.get('general', 'genes')
 
     global gene2pos
     gene2pos = {}
-
-    # initialize tads tracks
-    track_file = config.get('general', 'tracks')
-    tads = hicbrowser.tracks2json.SetTracks(track_file, fig_width=40)
 
     with opener(genes) as fh:
         for line in fh.readlines():
@@ -179,40 +149,6 @@ def main(config_file, port, numProc, template_folder=None,  debug=False):
     def index():
         return render_template("index.html")
 
-    @app.route('/gene/<gene_name>', methods=['GET'])
-    def get_tad(gene_name):
-        res = "unknown gene"
-        if gene_name:
-            # see if the gene is known
-            tad_pos = get_TAD_for_gene(gene_name)
-            if tad_pos:
-                chromosome, start, end = tad_pos
-                start -= 50000
-                end += 50000
-
-                # plot
-                outfile = "{}/{}_{}_{}.json".format(tad_img_root,
-                                                    chromosome,
-                                                    start,
-                                                    end)
-                if not exists(outfile):
-                    with open(outfile, 'w') as fh:
-                        sys.stderr.write("Saving json file: {}\n".format(outfile))
-                        fh.write(tads.get_json_interval_values(chromosome, start, end))
-
-                data = {'name': gene_name,
-                        'img': outfile,
-                        'chromosome': chromosome,
-                        'start': start,
-                        'end': end}
-
-                with open(outfile) as tracks:
-                        d = json.load(tracks)
-
-                data['tracks'] = d
-                res = json.dumps(data)
-        return res
-
     @app.route('/browser/<query>', methods=['GET'])
     def browser(query):
         if query:
@@ -224,11 +160,6 @@ def main(config_file, port, numProc, template_folder=None,  debug=False):
                 end += 50000
             else:
                 chromosome, start, end = pygenometracks.plotTracks.get_region(query.strip())
-                print("chr:{}".format(chromosome))
-                if end - start < 10000:
-                    sys.stderr.write("region to small ({}bp), enlarging it.".format(end - start))
-                    start -= 5000
-                    end += 5000
 
             start, end, resolution = snap_to_resolution(start, end)
             ### split tracks

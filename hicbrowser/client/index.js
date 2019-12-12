@@ -8,7 +8,6 @@ require('bootstrap');
 var Loading = require('./js/views/loading');
 var Search = require('./js/views/search');
 var Index = require('./js/views/index');
-var GeneView = require('./js/views/gene');
 var BrowserView = require('./js/views/browser');
 
 App = {};
@@ -18,12 +17,10 @@ App.views = {};
 App.views.loading = new Loading({el:'body'});
 App.views.search = new Search({el:'#search'});
 App.views.index = new Index({el:'#content'});
-App.views.gene = new GeneView({el:'#content'});
 App.views.browser = new BrowserView({el:'#content'});
 
 // Models
 App.models = {};
-App.models.Gene = require('./js/models/gene');
 App.models.Browser = require('./js/models/browser');
 App.models.Config = require('./js/models/config');
 

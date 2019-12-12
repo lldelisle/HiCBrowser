@@ -2,10 +2,6 @@ var _ = require('underscore');
 
 var AppRouter = Backbone.Router.extend({
     routes: {
-
-        "gene": 'getGene',
-        "gene/:id": 'getGeneId',
-
         "browser" : 'getBrowser',
         "browser/:id" : 'getBrowserId',
 
@@ -21,13 +17,6 @@ function setIndex(){
 
 var _current = {};
 
-function _renderGene(gene){
-
-    App.views.search.showGeneView(gene.id);
-    App.views.gene.render(gene);
-    App.views.gene.setVisible();
-}
-
 function _renderBrowser(browser){
 
     App.views.search.showBrowserView(browser);
@@ -37,44 +26,6 @@ function _renderBrowser(browser){
 
 // Instantiate the router
 var app_router = new AppRouter();
-
-app_router.on('route:getGene', function(){
-
-    if(!_.isUndefined(_current.gene)){
-        App.router.navigate('/gene/' + _current.gene.id, {trigger: false});
-        _renderGene(_current.gene);
-        return;
-    }
-
-    App.views.search.showGeneView();
-    setIndex();
-});
-
-app_router.on('route:getGeneId', function (id) {
-
-    if(!_.isUndefined(_current.gene) && _current.gene.id === id){
-        _renderGene(_current.gene);
-        return;
-    }
-
-    var gene = new App.models.Gene({id:id});
-
-    gene.fetch({
-        success: function(gene){
-
-            gene = gene.toJSON();
-            _current.gene = gene;
-            _renderGene(gene);
-
-        },
-        error: function(gene, res){
-
-            var text = 'Your search - <em>' + id + ' - </em> did not match any gene.  Check the browser for examples of valid gene names as they may be an id.';
-            App.views.search.renderError(text);
-            setIndex();
-        }
-    });
-});
 
 app_router.on('route:getBrowser', function(){
 
